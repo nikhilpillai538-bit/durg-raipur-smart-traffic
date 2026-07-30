@@ -1,0 +1,13 @@
+# Ignore API keys and secrets
+.env
+*.env
+
+# Ignore Virtual Environment
+venv/
+.venv/
+env/
+
+# Ignore Python cache & checkpoints
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
