@@ -6,10 +6,10 @@ Durg-Bhilai-Raipur corridor.
 Synchronized with traffic_engine.py:
   - Imports the SAME `CORRIDOR_NODES` coordinates, so both modules always
     agree on where "Durg Station", "Telibandha Lake Raipur", etc. actually are.
-  - Reuses `TomTomTrafficEngine.classify_congestion()` so a "MODERATE TRAFFIC"
+  - Reuses `MapplsTrafficEngine.classify_congestion()` so a "MODERATE TRAFFIC"
     label means exactly the same thing whether it came from a live API call
     or a model prediction.
-  - Can pull live readings straight from `TomTomTrafficEngine` and blend them
+  - Can pull live readings straight from `MapplsTrafficEngine` and blend them
     into the training set (`sync_with_live_engine`), so the model gradually
     learns from real traffic instead of only synthetic data.
   - Segment distances are derived from the real corridor coordinates
@@ -36,7 +36,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
 
-from traffic_engine import CORRIDOR_NODES, TomTomTrafficEngine
+from traffic_engine import CORRIDOR_NODES, MapplsTrafficEngine
 
 logging.basicConfig(
     level=logging.INFO,
@@ -232,10 +232,10 @@ class TrafficPredictorEngine:
     # ------------------------------------------------------------------ #
     # Live-data synchronization
     # ------------------------------------------------------------------ #
-    def sync_with_live_engine(self, engine: TomTomTrafficEngine, retrain: bool = True) -> int:
+    def sync_with_live_engine(self, engine: MapplsTrafficEngine, retrain: bool = True) -> int:
         """
         Pulls a fresh live snapshot for every corridor segment from
-        TomTomTrafficEngine and stores it as a training sample tagged with
+        MapplsTrafficEngine and stores it as a training sample tagged with
         the CURRENT hour/day. Call this periodically (e.g. hourly cron) to
         let the model absorb real conditions over time. Returns the number
         of samples collected.
@@ -259,7 +259,7 @@ class TrafficPredictorEngine:
             })
             new_samples += 1
 
-        logger.info("Collected %d live samples from TomTomTrafficEngine.", new_samples)
+        logger.info("Collected %d live samples from MapplsTrafficEngine.", new_samples)
 
         if retrain and self.live_history:
             live_df = pd.DataFrame(self.live_history)
@@ -314,7 +314,7 @@ class TrafficPredictorEngine:
         pred_parking = round(self.model_parking.predict(parking_input)[0], 1)
 
         congestion_index = round(pred_travel / max(free_flow_mins, 1.0), 2)
-        status_label, status_color = TomTomTrafficEngine.classify_congestion(congestion_index)
+        status_label, status_color = MapplsTrafficEngine.classify_congestion(congestion_index)
 
         target_repr = f"{day_of_week_str} @ {hour:02d}:00"
         return TrafficForecast(
@@ -419,6 +419,6 @@ if __name__ == "__main__":
 
     # Optional: sync with the live engine (uses fallback heuristic if no API key)
     print("\n--- SYNCING WITH LIVE TRAFFIC ENGINE ---")
-    live_engine = TomTomTrafficEngine()
+    live_engine = MapplsTrafficEngine()
     n = predictor.sync_with_live_engine(live_engine)
     print(f"Absorbed {n} live samples into the model and retrained.")

@@ -271,7 +271,7 @@ class TomTomTrafficEngine:
 
 # Quick test runner
 if __name__ == "__main__":
-    engine = TomTomTrafficEngine(api_key="YOUR_KEY_HERE")  # or set TOMTOM_API_KEY env var
+    engine = TomTomTrafficEngine(api_key=os.getenv("TOMTOM_API_KEY")) # or set TOMTOM_API_KEY env var
 
     durg = CORRIDOR_NODES["Durg Station"]
     raipur = CORRIDOR_NODES["Telibandha Lake Raipur"]

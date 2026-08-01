@@ -132,11 +132,6 @@ def get_parking_snapshot(_gen: ParkingMockGenerator) -> pd.DataFrame:
     return _gen.fetch_snapshot()
 
 
-@st.cache_data(ttl=3600)
-def get_route_geometry(_engine: MapplsTrafficEngine, o_lat, o_lon, d_lat, d_lon):
-    return _engine.fetch_route_geometry(o_lat, o_lon, d_lat, d_lon)
-
-
 @st.cache_data(ttl=60)
 def get_corridor_snapshot(_engine: MapplsTrafficEngine):
     return _engine.fetch_corridor_snapshot()
@@ -250,11 +245,8 @@ with tab1:
             icon=folium.Icon(color="red"),
         ).add_to(m)
 
-        route_points = get_route_geometry(
-            traffic_engine, orig_coords["lat"], orig_coords["lon"], dest_coords["lat"], dest_coords["lon"]
-        )
         folium.PolyLine(
-            route_points,
+            [(orig_coords["lat"], orig_coords["lon"]), (dest_coords["lat"], dest_coords["lon"])],
             color=live.status_color,
             weight=5,
             opacity=0.8,
